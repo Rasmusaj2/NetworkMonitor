@@ -11,6 +11,7 @@ const options = {
     txGraph: '#',
     graph: '@',
     interval: 1000,
+    interface: 0,
 };
 
 const args = process.argv.slice(2);
@@ -46,6 +47,9 @@ function parseArgs() {
             case '--interval':
                 options.interval = parseInt(value, 10);
                 break;
+	    case '--interface':
+		options.interface = parseInt(value, 10);
+		break;
             default:
                 console.log(`Unknown option: ${arg}`);
                 printUsage();
@@ -68,6 +72,7 @@ function printUsage() {
     --txGraph        Set transfer graph icon (default: #)
     --graph          Set combined graph icon (default: @)
     --interval       Set interval between logging (CURRENTLY BROKEN) (default: 1000)
+    --interface      Set NetworkInterface monitored (default: 0)
     `);
 } 
   
@@ -163,7 +168,7 @@ function addPadding(lineValue) {
 
 async function mainLoop() {
     const networkStats = await sysinfo.networkStats();
-    const networkInterface = networkStats[0];
+    const networkInterface = networkStats[options.interface];
     const {
         iface,
         rx_bytes,
