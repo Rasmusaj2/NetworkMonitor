@@ -161,9 +161,88 @@ function addPadding(lineValue) {
 }
 
 
-async function mainLoop() {
+async function networkStats() {
     const networkStats = await sysinfo.networkStats();
     const networkInterface = networkStats[options.interface];
+    return networkInterface;
+}
+
+async function connections() {
+    const peerStats = await sysinfo.networkConnections();
+
+    const nonLocalConnections = peerStats.filter(connection => 
+        !connection.peerAddress.startsWith('127.') && 
+        !connection.peerAddress.startsWith('192.168.') && 
+        !connection.peerAddress.startsWith('10.') && 
+        !connection.peerAddress.startsWith('0.0.0.0') && 
+        !connection.peerAddress.startsWith(':')
+    );	
+
+    const uniqueConnections = new Map();
+    nonLocalConnections.forEach(connection => {
+        const {
+            peerAddress,
+            tx_sec,
+            rx_sec,
+            pid,
+        } = connection;
+
+        const key = `${peerAddress}-${tx_sec || 0}-${rx_sec || 0}`;
+        if (!uniqueConnections.has(key)) {
+            uniqueConnections.set(key, {
+                peerAddress,
+                tx_sec,
+                rx_sec,
+                pid,
+            });
+        }
+    });
+
+    return [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
+}
+
+async function networkStats() {
+    const networkStats = await sysinfo.networkStats();
+    const networkInterface = networkStats[options.interface];
+    return networkInterface;
+}
+
+async function connections() {
+    const peerStats = await sysinfo.networkConnections();
+
+    const nonLocalConnections = peerStats.filter(connection => 
+        !connection.peerAddress.startsWith('127.') && 
+        !connection.peerAddress.startsWith('192.168.') && 
+        !connection.peerAddress.startsWith('10.') && 
+        !connection.peerAddress.startsWith('0.0.0.0') && 
+        !connection.peerAddress.startsWith(':')
+    );	
+
+    const uniqueConnections = new Map();
+    nonLocalConnections.forEach(connection => {
+        const {
+            peerAddress,
+            tx_sec,
+            rx_sec,
+            pid,
+        } = connection;
+
+        const key = `${peerAddress}-${tx_sec || 0}-${rx_sec || 0}`;
+        if (!uniqueConnections.has(key)) {
+            uniqueConnections.set(key, {
+                peerAddress,
+                tx_sec,
+                rx_sec,
+                pid,
+            });
+        }
+    });
+
+    return [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
+}
+
+async function mainLoop() {
+    const networkInterface = await networkStats();
     const {
         iface,
         rx_bytes,
@@ -194,52 +273,22 @@ async function mainLoop() {
     console.log(`  Max: ${format(rxMax)}/s		  ${format(txMax)}/s`);
     drawGraph(rxHistory, txHistory);
 
-
-    const peerStats = await sysinfo.networkConnections();
-
-    const nonLocalConnections = peerStats.filter(connection => 
-    !connection.peerAddress.startsWith('127.') && 
-    !connection.peerAddress.startsWith('192.168.') && 
-    !connection.peerAddress.startsWith('10.') && 
-    !connection.peerAddress.startsWith('0.0.0.0') && 
-    !connection.peerAddress.startsWith(':')
-    );	
-
-    const uniqueConnections = new Map();
-    nonLocalConnections.forEach(connection => {
-    const {
-        peerAddress,
-        tx_sec,
-        rx_sec,
-        pid,
-    } = connection;
-
-    const key = `${peerAddress}-${tx_sec || 0}-${rx_sec || 0}`;
-    if (!uniqueConnections.has(key)) {
-        uniqueConnections.set(key, {
-        peerAddress,
-        tx_sec,
-        rx_sec,
-        pid,
-        });
-    }
-    });
-
-    const sortedConnections = [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
+    const sortedConnections = await connections();
 
     sortedConnections.forEach(connection => {
-    const {
-        peerAddress,
-        tx_sec,
-        rx_sec,
-        pid,
-    } = connection;
+        const {
+            peerAddress,
+            tx_sec,
+            rx_sec,
+            pid,
+        } = connection;
 
-    console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
+        console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
 			
     if (options.debug) {debug(rxHistory, txHistory, networkInterface, peerStats);}
 }
+
 
 function debug(rx, tx, nI, pS) {
     console.log('DEBUG');
