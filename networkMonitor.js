@@ -237,14 +237,18 @@ async function mainLoop() {
 
     console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
-	
-		
-    if (options.debug) {console.log('DEBUG TESTING');}
-    if (options.debug) {console.log(rxHistory);}
-    if (options.debug) {console.log(txHistory);}
-    if (options.debug) {console.log(networkInterface);}
-    if (options.debug) {console.log(peerStats);}
-    if (options.debug) {date = new Date(); console.log(date.getMilliseconds());}
+			
+    if (options.debug) {debug(rxHistory, txHistory, networkInterface, peerStats);}
+}
+
+function debug(rx, tx, nI, pS) {
+    console.log('DEBUG');
+    console.log(rx);
+    console.log(tx);
+    console.log(nI);
+    console.log(pS);
+    date = new Date();
+    console.log(date.getMilliseconds());
 }
 
 
