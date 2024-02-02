@@ -10,6 +10,7 @@ const options = {
     rxGraph: '@',
     txGraph: '#',
     graph: '@',
+    interface: 0,
 };
 
 const args = process.argv.slice(2);
@@ -42,14 +43,17 @@ function parseArgs() {
             case '--graph':
                 options.graph = value;
                 break;
+	    case '--interface':
+		options.interface = parseInt(value, 10);
+		break;
             default:
-                // unknown case, print usage
                 console.log(`Unknown option: ${arg}`);
                 printUsage();
                 process.exit(1); 
         }
     }
 }
+  
 
 function printUsage() {
     console.log(`
@@ -63,6 +67,7 @@ function printUsage() {
     --rxGraph        Set recieve graph icon (default: @)
     --txGraph        Set transfer graph icon (default: #)
     --graph          Set combined graph icon (default: @)
+    --interface      Set NetworkInterface monitored (default: 0)
     `);
 } 
   
@@ -89,63 +94,76 @@ function sumArray(array) {
 
 function drawGraph(rxHis, txHis) {
     const yHeight = 12;
-    const xLength = options.seconds; 
-  
+    const xLength = options.seconds;
     rxHis = rxHis.slice(-xLength);
     txHis = txHis.slice(-xLength);
-  
-    const yMaxRx = Math.max(...rxHis) * yHeight / 10;
-    const yMaxTx = Math.max(...txHis) * yHeight / 10;
-    const yMax = yMaxRx > yMaxTx ? yMaxRx : yMaxTx;
-  
+
+    const graphArray = initializeGraphArray(yHeight, xLength);
+    fillGraphArray(graphArray, rxHis, txHis);
+    displayGraph(graphArray, yHeight, xLength);
+    console.log(` '${options.rxGraph}' Received, '${options.txGraph}' Transferred, '${options.graph}' Both`);
+}
+
+function initializeGraphArray(yHeight, xLength) {
     const graphArray = [];
-  
     for (let i = 0; i < yHeight; i++) {
-      graphArray[i] = [];
-      for (let j = 0; j < xLength; j++) {
-        graphArray[i][j] = " ";
-      }
-    }
-  
-    for (let i = 0; i < yHeight; i++) {
-      const lineValue = yMax - ((yMax / yHeight) * (i + 1));
-  
-      for (let j = 0; j < xLength; j++) {
-        if (rxHis[j] >= lineValue && txHis[j] < lineValue) {
-          graphArray[i][j] = options.rxGraph; 
-        } else if (txHis[j] >= lineValue && rxHis[j] < lineValue) {
-          graphArray[i][j] = options.txGraph; 
-        } else if (rxHis[j] >= lineValue && txHis[j] >= lineValue) {
-          graphArray[i][j] = options.graph; 
+        graphArray[i] = [];
+        for (let j = 0; j < xLength; j++) {
+            graphArray[i][j] = " ";
         }
-      }
     }
-  
+    return graphArray;
+}
+
+function fillGraphArray(graphArray, rxHis, txHis) {
+    const yHeight = graphArray.length;
     for (let i = 0; i < yHeight; i++) {
-      const lineValueRx = yMax - ((yMax / yHeight) * (i + 1));
-      let currentLine = format(lineValueRx);
-      const length = [...currentLine].length;
-  
-      // Add padding for alignment
-      for (let k = length; k < 10; k++) {
-        currentLine += " ";
-      }
-
-      currentLine += ` | `;
-  
-      for (let j = 0; j < xLength; j++) {
-        currentLine += graphArray[i][j];
-      }
-  
-      console.log(currentLine);
+        const lineValue = calculateLineValue(i, yHeight, Math.max(...rxHis), Math.max(...txHis));
+        for (let j = 0; j < graphArray[0].length; j++) {
+            updateGraphArrayElement(graphArray, rxHis, txHis, i, j, lineValue);
+        }
     }
-    console.log(` '${options.rxGraph}' Recieved, '${options.txGraph}' Transferred, '${options.graph}' Both`);
-  }
+}
+
+function calculateLineValue(i, yHeight, maxRx, maxTx) {
+    return maxRx > maxTx ? maxRx - ((maxRx / yHeight) * (i + 1)) : maxTx - ((maxTx / yHeight) * (i + 1));
+}
+
+function updateGraphArrayElement(graphArray, rxHis, txHis, i, j, lineValue) {
+    if (rxHis[j] >= lineValue && txHis[j] < lineValue) {
+        graphArray[i][j] = options.rxGraph;
+    } else if (txHis[j] >= lineValue && rxHis[j] < lineValue) {
+        graphArray[i][j] = options.txGraph;
+    } else if (rxHis[j] >= lineValue && txHis[j] >= lineValue) {
+        graphArray[i][j] = options.graph;
+    }
+}
+
+function displayGraph(graphArray, yHeight, xLength) {
+    for (let i = 0; i < yHeight; i++) {
+        const lineValueRx = calculateLineValue(i, yHeight, Math.max(...rxHistory), Math.max(...txHistory));
+        let currentLine = addPadding(lineValueRx) + " | ";
+        for (let j = 0; j < xLength; j++) {
+            currentLine += graphArray[i][j];
+        }
+        console.log(currentLine);
+    }
+}
+
+function addPadding(lineValue) {
+    let paddedLine = format(lineValue);
+    const length = paddedLine.length;
+
+    for (let k = length; k < 10; k++) {
+        paddedLine += " ";
+    }
+    return paddedLine;
+}
 
 
-async function consoleOutput() {
+async function mainLoop() {
     const networkStats = await sysinfo.networkStats();
-    const networkInterface = networkStats[0];
+    const networkInterface = networkStats[options.interface];
     const {
         iface,
         rx_bytes,
@@ -159,6 +177,7 @@ async function consoleOutput() {
 
     const rxAverage = sumArray(rxHistory)/rxHistory.length;
     const txAverage = sumArray(txHistory)/txHistory.length;
+	
     const rxMin = Math.min(...rxHistory);
     const rxMax = Math.max(...rxHistory);
     const txMin = Math.min(...txHistory);
@@ -175,9 +194,9 @@ async function consoleOutput() {
     console.log(`  Max: ${format(rxMax)}/s		  ${format(txMax)}/s`);
     drawGraph(rxHistory, txHistory);
 
+
     const peerStats = await sysinfo.networkConnections();
 
-    // 1 line for each or it gets unreadable
     const nonLocalConnections = peerStats.filter(connection => 
     !connection.peerAddress.startsWith('127.') && 
     !connection.peerAddress.startsWith('192.168.') && 
@@ -219,6 +238,7 @@ async function consoleOutput() {
     console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
 	
+		
     if (options.debug) {console.log('DEBUG TESTING');}
     if (options.debug) {console.log(rxHistory);}
     if (options.debug) {console.log(txHistory);}
@@ -231,7 +251,7 @@ async function consoleOutput() {
 rxHistory = [];
 txHistory = [];
 const main = () => {
-    setInterval(consoleOutput, 1000);
+    setInterval(mainLoop, 1000);
 };
 
 parseArgs();
