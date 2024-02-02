@@ -10,7 +10,6 @@ const options = {
     rxGraph: '@',
     txGraph: '#',
     graph: '@',
-    interval: 1000,
     interface: 0,
 };
 
@@ -44,9 +43,6 @@ function parseArgs() {
             case '--graph':
                 options.graph = value;
                 break;
-            case '--interval':
-                options.interval = parseInt(value, 10);
-                break;
 	    case '--interface':
 		options.interface = parseInt(value, 10);
 		break;
@@ -71,7 +67,6 @@ function printUsage() {
     --rxGraph        Set recieve graph icon (default: @)
     --txGraph        Set transfer graph icon (default: #)
     --graph          Set combined graph icon (default: @)
-    --interval       Set interval between logging (CURRENTLY BROKEN) (default: 1000)
     --interface      Set NetworkInterface monitored (default: 0)
     `);
 } 
@@ -256,7 +251,7 @@ async function mainLoop() {
 rxHistory = [];
 txHistory = [];
 const main = () => {
-    setInterval(mainLoop, options.interval);
+    setInterval(mainLoop, 1000);
 };
 
 parseArgs();
