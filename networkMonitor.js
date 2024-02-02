@@ -142,13 +142,22 @@ function updateGraphArrayElement(graphArray, rxHis, txHis, i, j, lineValue) {
 function displayGraph(graphArray, yHeight, xLength) {
     for (let i = 0; i < yHeight; i++) {
         const lineValueRx = calculateLineValue(i, yHeight, Math.max(...rxHistory), Math.max(...txHistory));
-	    
-        let currentLine = format(lineValueRx) + " | ";
+        let currentLine = addPadding(lineValueRx) + " | ";
         for (let j = 0; j < xLength; j++) {
             currentLine += graphArray[i][j];
         }
         console.log(currentLine);
     }
+}
+
+function addPadding(lineValue) {
+    let paddedLine = format(lineValue);
+    const length = paddedLine.length;
+
+    for (let k = length; k < 10; k++) {
+        paddedLine += " ";
+    }
+    return paddedLine;
 }
 
 
