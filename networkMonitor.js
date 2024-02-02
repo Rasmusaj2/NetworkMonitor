@@ -10,7 +10,6 @@ const options = {
     rxGraph: '@',
     txGraph: '#',
     graph: '@',
-    interval: 1000,
 };
 
 const args = process.argv.slice(2);
@@ -43,9 +42,6 @@ function parseArgs() {
             case '--graph':
                 options.graph = value;
                 break;
-            case '--interval':
-                options.interval = parseInt(value, 10);
-                break;
             default:
                 // unknown case, print usage
                 console.log(`Unknown option: ${arg}`);
@@ -54,8 +50,7 @@ function parseArgs() {
         }
     }
 }
-  
-  // console log at error for feedback
+
 function printUsage() {
     console.log(`
     Usage: node app.js [options]
@@ -68,7 +63,6 @@ function printUsage() {
     --rxGraph        Set recieve graph icon (default: @)
     --txGraph        Set transfer graph icon (default: #)
     --graph          Set combined graph icon (default: @)
-    --interval       Set interval between logging (CURRENTLY BROKEN) (default: 1000)
     `);
 } 
   
@@ -76,10 +70,7 @@ function printUsage() {
 function format(bytes) {
     const decimals = 2;
     if (bytes === 0) return '0 B';
-    const size = options.size; //technicality to self.
-    // bytes are usually in 1000. 1024 is for mebibytes, gibibytes, so on, so it should be MiB, GiB, but whatever
-    //software usually does 1024 tho, especially windows for drive space, but this is network so maybe 1000 is better?
-    // NOTE TO SELF: NOW DEFAULTS TO 1000 ITS WHATEVER WE BALL
+    const size = options.size; 
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const dm = decimals < 0 ? 0 : decimals;
 
@@ -116,7 +107,6 @@ function drawGraph(rxHis, txHis) {
       }
     }
   
-    // *rxHis, #txHis, @both
     for (let i = 0; i < yHeight; i++) {
       const lineValue = yMax - ((yMax / yHeight) * (i + 1));
   
@@ -140,7 +130,7 @@ function drawGraph(rxHis, txHis) {
       for (let k = length; k < 10; k++) {
         currentLine += " ";
       }
-  
+
       currentLine += ` | `;
   
       for (let j = 0; j < xLength; j++) {
@@ -154,7 +144,6 @@ function drawGraph(rxHis, txHis) {
 
 
 async function consoleOutput() {
-    // find actual network generalized data
     const networkStats = await sysinfo.networkStats();
     const networkInterface = networkStats[0];
     const {
@@ -168,10 +157,8 @@ async function consoleOutput() {
     rxHistory.push(rx_sec || 0);
     txHistory.push(tx_sec || 0);
 
-    // calc the stuff
     const rxAverage = sumArray(rxHistory)/rxHistory.length;
     const txAverage = sumArray(txHistory)/txHistory.length;
-    // triple dot cause u have to seperate the array apparently idk it didnt work before but does now
     const rxMin = Math.min(...rxHistory);
     const rxMax = Math.max(...rxHistory);
     const txMin = Math.min(...txHistory);
@@ -188,18 +175,6 @@ async function consoleOutput() {
     console.log(`  Max: ${format(rxMax)}/s		  ${format(txMax)}/s`);
     drawGraph(rxHistory, txHistory);
 
-// deprecated if the tabbing works
-/*    console.log(`Transferred:`);
-    console.log(`  Total: ${format(tx_bytes)}`);
-    console.log(`  Running: ${format(sumArray(txHistory))}`);
-    console.log(`  Current: ${format(tx_sec || 0)}/s`);
-    console.log(`  Average: ${format(txAverage)}/s`);
-    console.log(`  Min: ${format(txMin)}/s`);
-    console.log(`  Max: ${format(txMax)}/s`); */
-    // drawGraph(txHistory, 'Transferred');
-	
-	
-    // find connection data for outgoing connections
     const peerStats = await sysinfo.networkConnections();
 
     // 1 line for each or it gets unreadable
@@ -231,7 +206,6 @@ async function consoleOutput() {
     }
     });
 
-    // bullshit ass line of code
     const sortedConnections = [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
 
     sortedConnections.forEach(connection => {
@@ -245,12 +219,9 @@ async function consoleOutput() {
     console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
 	
-		
-    // DEBUG PRINT STUFF WHATEVER
     if (options.debug) {console.log('DEBUG TESTING');}
     if (options.debug) {console.log(rxHistory);}
     if (options.debug) {console.log(txHistory);}
-//    if (options.debug) {console.log(plotSecs);} PLOTSECS NO LONGER USED
     if (options.debug) {console.log(networkInterface);}
     if (options.debug) {console.log(peerStats);}
     if (options.debug) {date = new Date(); console.log(date.getMilliseconds());}
@@ -260,7 +231,7 @@ async function consoleOutput() {
 rxHistory = [];
 txHistory = [];
 const main = () => {
-    setInterval(consoleOutput, options.interval);
+    setInterval(consoleOutput, 1000);
 };
 
 parseArgs();
