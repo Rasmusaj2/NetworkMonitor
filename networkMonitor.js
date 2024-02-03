@@ -9,7 +9,7 @@ const options = {
     size: 1000,
     rxGraph: '@',
     txGraph: '#',
-    graph: '@',
+    graph: '*',
     interface: 0,
 };
 
@@ -126,7 +126,10 @@ function fillGraphArray(graphArray, rxHis, txHis) {
 }
 
 function calculateLineValue(i, yHeight, maxRx, maxTx) {
-    return maxRx > maxTx ? maxRx - ((maxRx / yHeight) * (i + 1)) : maxTx - ((maxTx / yHeight) * (i + 1));
+    const yMaxRx = maxRx * yHeight / 10;
+    const yMaxTx = maxTx * yHeight / 10;
+    yMax = yMaxRx > yMaxTx ? yMaxRx : yMaxTx;
+    return yMax - ((yMax / yHeight) * (i + 1));
 }
 
 function updateGraphArrayElement(graphArray, rxHis, txHis, i, j, lineValue) {
