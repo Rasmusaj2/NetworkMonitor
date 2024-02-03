@@ -135,7 +135,7 @@ function updateGraphArrayElement(graphArray, rxHis, txHis, i, j, lineValue) {
 function displayGraph(graphArray, yHeight, xLength) {
     for (let i = 0; i < yHeight; i++) {
         const lineValueRx = calculateLineValue(i, yHeight, Math.max(...rxHistory), Math.max(...txHistory));
-        let currentLine = addPadding(lineValueRx) + " | ";
+        let currentLine = addPadding(format(lineValueRx), 10) + " | ";
         for (let j = 0; j < xLength; j++) {
             currentLine += graphArray[i][j];
         }
@@ -143,14 +143,13 @@ function displayGraph(graphArray, yHeight, xLength) {
     }
 }
 
-function addPadding(lineValue) {
-    let paddedLine = format(lineValue);
-    const length = paddedLine.length;
+function addPadding(inputString, lengthGoal) {
+    const length = inputString.length;
 
-    for (let k = length; k < 10; k++) {
-        paddedLine += " ";
+    for (let k = length; k < lengthGoal; k++) {
+        inputString += " ";
     }
-    return paddedLine;
+    return inputString;
 }
 
 
