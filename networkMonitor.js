@@ -83,20 +83,10 @@ function format(bytes) {
     return parseFloat((bytes / Math.pow(size, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-function sumArray(array) {
-    let sum = 0;
-    for (let i = 0; i < array.length; i++) {
-        sum += array[i];
-    }
-    return sum;
-}
-
 
 function drawGraph(rxHis, txHis) {
     const yHeight = 12;
     const xLength = options.seconds;
-    rxHis = rxHis.slice(-xLength);
-    txHis = txHis.slice(-xLength);
 
     const graphArray = initializeGraphArray(yHeight, xLength);
     fillGraphArray(graphArray, rxHis, txHis);
@@ -244,7 +234,22 @@ async function connections() {
     return [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
 }
 
+function minMax(txCurrent, rxCurrent) {
+    if (txCurrent > txMax) {
+        txMax = txCurrent;
+    } else if (txCurrent < txMin) {
+        txMin = txCurrent;
+    }
+    if (rxCurrent > rxMax) {
+        rxMax = rxCurrent;
+    } else if (txCurrent < rxMin) {
+        rxMax = rxCurrent;
+    }
+    return;
+}
+
 async function mainLoop() {
+    runtime++;
     const networkInterface = await networkStats();
     const {
         iface,
@@ -256,20 +261,20 @@ async function mainLoop() {
 
     rxHistory.push(rx_sec || 0);
     txHistory.push(tx_sec || 0);
+    rxHistory = rxHistory.slice(-options.seconds);
+    txHistory = txHistory.slice(-options.seconds);
 
-    const rxAverage = sumArray(rxHistory)/rxHistory.length;
-    const txAverage = sumArray(txHistory)/txHistory.length;
-	
-    const rxMin = Math.min(...rxHistory);
-    const rxMax = Math.max(...rxHistory);
-    const txMin = Math.min(...txHistory);
-    const txMax = Math.max(...txHistory)
+    rxSum += rx_sec;
+    txSum += tx_sec;
+    const rxAverage = rxSum/runtime;
+    const txAverage = txSum/runtime;
+	minMax(tx_sec, rx_sec);
 
     console.clear();
     console.log(`Interface: ${iface}`);
     console.log(`Received:			Transferred: `);
     console.log(`  Total: ${format(rx_bytes)}		  ${format(tx_bytes)}`);
-    console.log(`  Running: ${format(sumArray(rxHistory))}		  ${format(sumArray(txHistory))}`);
+    console.log(`  Running: ${format(rxSum)}		  ${format(txSum)}`);
     console.log(`  Current: ${format(rx_sec || 0)}/s		  ${format(tx_sec || 0)}/s`);
     console.log(`  Average: ${format(rxAverage)}/s		  ${format(txAverage)}/s`);
     console.log(`  Min: ${format(rxMin)}/s			  ${format(txMin)}/s`);
@@ -305,7 +310,14 @@ function debug(rx, tx, nI, pS) {
 
 
 rxHistory = [];
+rxSum = 0;
+rxMin = 0;
+rxMax = 0;
 txHistory = [];
+txSum = 0;
+txMin = 0;
+txMax = 0;
+runtime = 0;
 const main = () => {
     setInterval(mainLoop, 1000);
 };
