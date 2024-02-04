@@ -271,13 +271,13 @@ async function mainLoop() {
 
     console.clear();
     console.log(`Interface: ${iface}`);
-    console.log(`Received:			Transferred: `);
-    console.log(`  Total: ${format(rx_bytes)}		  ${format(tx_bytes)}`);
-    console.log(`  Running: ${format(rxSum)}		  ${format(txSum)}`);
-    console.log(`  Current: ${format(rx_sec || 0)}/s		  ${format(tx_sec || 0)}/s`);
-    console.log(`  Average: ${format(rxAverage)}/s		  ${format(txAverage)}/s`);
-    console.log(`  Min: ${format(rxMin)}/s			  ${format(txMin)}/s`);
-    console.log(`  Max: ${format(rxMax)}/s		  ${format(txMax)}/s`);
+    console.log(addPadding(`Received:`, 32) + `Transferred: `);
+    console.log(addPadding(`  Total: ${format(rx_bytes)}`, 34) + `${format(tx_bytes)}`);
+    console.log(addPadding(`  Running: ${format(rxSum)}`, 34) + `${format(txSum)}`);
+    console.log(addPadding(`  Current: ${format(rx_sec || 0)}/s`, 34) + `${format(tx_sec || 0)}/s`);
+    console.log(addPadding(`  Average: ${format(rxAverage)}/s`, 34) + `${format(txAverage)}/s`);
+    console.log(addPadding(`  Min: ${format(rxMin)}/s`, 34) + `${format(txMin)}/s`);
+    console.log(addPadding(`  Max: ${format(rxMax)}/s`, 34) + `${format(txMax)}/s`);
     drawGraph(rxHistory, txHistory);
 
     const sortedConnections = await connections();
