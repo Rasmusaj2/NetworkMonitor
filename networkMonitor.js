@@ -60,14 +60,14 @@ function printUsage() {
     Usage: node app.js [options]
 
     Options:
-    --debug          Enable debug mode (default: false)
-    --maxPeers       Set maximum number of ip addresses displayed (default: 10)
-    --seconds        Set seconds displayed on graph (default: 30)
-    --size           Set size of unitconversion (default: 1000)
-    --rxGraph        Set recieve graph icon (default: @)
-    --txGraph        Set transfer graph icon (default: #)
-    --graph          Set combined graph icon (default: @)
-    --interface      Set NetworkInterface monitored (default: 0)
+    --debug          Enable debug mode (default: ${options.debug})
+    --maxPeers       Set maximum number of ip addresses displayed (default: ${options.maxPeers})
+    --seconds        Set seconds displayed on graph (default: ${options.seconds})
+    --size           Set size of unitconversion (default: ${options.size})
+    --rxGraph        Set recieve graph icon (default: ${options.rxGraph})
+    --txGraph        Set transfer graph icon (default: ${options.txGraph})
+    --graph          Set combined graph icon (default: ${options.graph})
+    --interface      Set NetworkInterface monitored (default: ${options.interface})
     `);
 } 
   
@@ -119,6 +119,7 @@ function calculateLineValue(i, yHeight, maxRx, maxTx) {
     const yMaxRx = maxRx * yHeight / 10;
     const yMaxTx = maxTx * yHeight / 10;
     yMax = yMaxRx > yMaxTx ? yMaxRx : yMaxTx;
+    if (i + 1 == yHeight) {return 0;}
     return yMax - ((yMax / yHeight) * (i + 1));
 }
 
