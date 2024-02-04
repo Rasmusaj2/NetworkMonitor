@@ -60,14 +60,14 @@ function printUsage() {
     Usage: node app.js [options]
 
     Options:
-    --debug          Enable debug mode (default: false)
-    --maxPeers       Set maximum number of ip addresses displayed (default: 10)
-    --seconds        Set seconds displayed on graph (default: 30)
-    --size           Set size of unitconversion (default: 1000)
-    --rxGraph        Set recieve graph icon (default: @)
-    --txGraph        Set transfer graph icon (default: #)
-    --graph          Set combined graph icon (default: @)
-    --interface      Set NetworkInterface monitored (default: 0)
+    --debug          Enable debug mode (default: ${options.debug})
+    --maxPeers       Set maximum number of ip addresses displayed (default: ${options.maxPeers})
+    --seconds        Set seconds displayed on graph (default: ${options.seconds})
+    --size           Set size of unitconversion (default: ${options.size})
+    --rxGraph        Set recieve graph icon (default: ${options.rxGraph})
+    --txGraph        Set transfer graph icon (default: ${options.txGraph})
+    --graph          Set combined graph icon (default: ${options.graph})
+    --interface      Set NetworkInterface monitored (default: ${options.interface})
     `);
 } 
   
@@ -119,6 +119,7 @@ function calculateLineValue(i, yHeight, maxRx, maxTx) {
     const yMaxRx = maxRx * yHeight / 10;
     const yMaxTx = maxTx * yHeight / 10;
     yMax = yMaxRx > yMaxTx ? yMaxRx : yMaxTx;
+    if (i + 1 == yHeight) {return 0;}
     return yMax - ((yMax / yHeight) * (i + 1));
 }
 
@@ -135,7 +136,7 @@ function updateGraphArrayElement(graphArray, rxHis, txHis, i, j, lineValue) {
 function displayGraph(graphArray, yHeight, xLength) {
     for (let i = 0; i < yHeight; i++) {
         const lineValueRx = calculateLineValue(i, yHeight, Math.max(...rxHistory), Math.max(...txHistory));
-        let currentLine = addPadding(lineValueRx) + " | ";
+        let currentLine = addPadding(format(lineValueRx), 10) + " | ";
         for (let j = 0; j < xLength; j++) {
             currentLine += graphArray[i][j];
         }
@@ -143,14 +144,13 @@ function displayGraph(graphArray, yHeight, xLength) {
     }
 }
 
-function addPadding(lineValue) {
-    let paddedLine = format(lineValue);
-    const length = paddedLine.length;
+function addPadding(inputString, lengthGoal) {
+    const length = inputString.length;
 
-    for (let k = length; k < 10; k++) {
-        paddedLine += " ";
+    for (let k = length; k < lengthGoal; k++) {
+        inputString += " ";
     }
-    return paddedLine;
+    return inputString;
 }
 
 
@@ -272,13 +272,13 @@ async function mainLoop() {
 
     console.clear();
     console.log(`Interface: ${iface}`);
-    console.log(`Received:			Transferred: `);
-    console.log(`  Total: ${format(rx_bytes)}		  ${format(tx_bytes)}`);
-    console.log(`  Running: ${format(rxSum)}		  ${format(txSum)}`);
-    console.log(`  Current: ${format(rx_sec || 0)}/s		  ${format(tx_sec || 0)}/s`);
-    console.log(`  Average: ${format(rxAverage)}/s		  ${format(txAverage)}/s`);
-    console.log(`  Min: ${format(rxMin)}/s			  ${format(txMin)}/s`);
-    console.log(`  Max: ${format(rxMax)}/s		  ${format(txMax)}/s`);
+    console.log(addPadding(`Received:`, 32) + `Transferred: `);
+    console.log(addPadding(`  Total: ${format(rx_bytes)}`, 34) + `${format(tx_bytes)}`);
+    console.log(addPadding(`  Running: ${format(rxSum)}`, 34) + `${format(txSum)}`);
+    console.log(addPadding(`  Current: ${format(rx_sec || 0)}/s`, 34) + `${format(tx_sec || 0)}/s`);
+    console.log(addPadding(`  Average: ${format(rxAverage)}/s`, 34) + `${format(txAverage)}/s`);
+    console.log(addPadding(`  Min: ${format(rxMin)}/s`, 34) + `${format(txMin)}/s`);
+    console.log(addPadding(`  Max: ${format(rxMax)}/s`, 34) + `${format(txMax)}/s`);
     drawGraph(rxHistory, txHistory);
 
     const sortedConnections = await connections();
