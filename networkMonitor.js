@@ -194,46 +194,6 @@ async function connections() {
     return [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
 }
 
-async function networkStats() {
-    const networkStats = await sysinfo.networkStats();
-    const networkInterface = networkStats[options.interface];
-    return networkInterface;
-}
-
-async function connections() {
-    const peerStats = await sysinfo.networkConnections();
-
-    const nonLocalConnections = peerStats.filter(connection => 
-        !connection.peerAddress.startsWith('127.') && 
-        !connection.peerAddress.startsWith('192.168.') && 
-        !connection.peerAddress.startsWith('10.') && 
-        !connection.peerAddress.startsWith('0.0.0.0') && 
-        !connection.peerAddress.startsWith(':')
-    );	
-
-    const uniqueConnections = new Map();
-    nonLocalConnections.forEach(connection => {
-        const {
-            peerAddress,
-            tx_sec,
-            rx_sec,
-            pid,
-        } = connection;
-
-        const key = `${peerAddress}-${tx_sec || 0}-${rx_sec || 0}`;
-        if (!uniqueConnections.has(key)) {
-            uniqueConnections.set(key, {
-                peerAddress,
-                tx_sec,
-                rx_sec,
-                pid,
-            });
-        }
-    });
-
-    return [...uniqueConnections.values()].sort((a, b) => (b.tx_sec + b.rx_sec) - (a.tx_sec + a.rx_sec)).slice(0, options.maxPeers);
-}
-
 function minMax(txCurrent, rxCurrent) {
     if (txCurrent > txMax) {
         txMax = txCurrent;
