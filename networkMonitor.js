@@ -254,16 +254,15 @@ async function mainLoop() {
         console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
 			
-    if (options.debug) {debug(rxHistory, txHistory, networkInterface, peerStats);}
+    if (options.debug) {debug(rxHistory, txHistory, networkInterface);}
 }
 
 
-function debug(rx, tx, nI, pS) {
+function debug(rx, tx, nI) {
     console.log('DEBUG');
     console.log(rx);
     console.log(tx);
     console.log(nI);
-    console.log(pS);
     date = new Date();
     console.log(date.getMilliseconds());
 }
