@@ -15,7 +15,7 @@ const options = {
 
 const args = process.argv.slice(2);
 
-// parseArgs
+
 function parseArgs() {
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -43,9 +43,9 @@ function parseArgs() {
             case '--graph':
                 options.graph = value;
                 break;
-	    case '--interface':
-		options.interface = parseInt(value, 10);
-		break;
+	        case '--interface':
+		        options.interface = parseInt(value, 10);
+		        break;
             default:
                 console.log(`Unknown option: ${arg}`);
                 printUsage();
