@@ -7,7 +7,7 @@ This is a simple network monitoring tool to track the connections going through 
 Make sure you have Node.js installed on your system. clone this repository and install dependencies using npm:
 
 ```bash
-git clone https://github.com/username/repository.git
+git clone https://github.com/rasmusaj2/NetworkMonitor.git
 cd repository
 npm install
 ```
@@ -17,7 +17,7 @@ npm install
 Run the network monitor tool with optional command-line arguments to customize its behavior:
 
 ```bash
-node app.js [options]
+node networkMonitor.js [options]
 ```
 
 #### Options:
@@ -34,7 +34,7 @@ node app.js [options]
 ### Example:
 
 ```bash
-node app.js --debug=true --maxPeers=15 --seconds=60
+node networkMonitor.js --debug=true --maxPeers=15 --seconds=60
 ```
 
 ### Functionality:
