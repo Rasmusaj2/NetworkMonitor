@@ -205,6 +205,8 @@ function minMax(txCurrent, rxCurrent) {
     } else if (txCurrent < rxMin) {
         rxMax = rxCurrent;
     }
+    txMin = txMin == undefined ? txCurrent : txMin;
+    rxMin = rxMin == undefined ? rxCurrent : rxMin;
     return;
 }
 
@@ -270,11 +272,11 @@ function debug(rx, tx, nI) {
 
 rxHistory = [];
 rxSum = 0;
-rxMin = 0;
+rxMin = undefined;
 rxMax = 0;
 txHistory = [];
 txSum = 0;
-txMin = 0;
+txMin = undefined;
 txMax = 0;
 runtime = 0;
 const main = () => {
