@@ -221,6 +221,15 @@ async function mainLoop() {
         tx_sec,
     } = networkInterface;
 
+    const sortedConnections = await connections();
+    sortedConnections.forEach(connection => {
+        const {
+            peerAddress,
+            tx_sec,
+            rx_sec,
+            pid,
+        } = connection;
+
     rxHistory.push(rx_sec || 0);
     txHistory.push(tx_sec || 0);
     rxHistory = rxHistory.slice(-options.seconds);
@@ -231,6 +240,7 @@ async function mainLoop() {
     const rxAverage = rxSum/runtime;
     const txAverage = txSum/runtime;
 	minMax(tx_sec, rx_sec);
+
 
     console.clear();
     console.log(`Interface: ${iface}`);
@@ -243,15 +253,7 @@ async function mainLoop() {
     console.log(addPadding(`  Max: ${format(rxMax)}/s`, 34) + `${format(txMax)}/s`);
     drawGraph(rxHistory, txHistory);
 
-    const sortedConnections = await connections();
-
-    sortedConnections.forEach(connection => {
-        const {
-            peerAddress,
-            tx_sec,
-            rx_sec,
-            pid,
-        } = connection;
+    
 
         console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
