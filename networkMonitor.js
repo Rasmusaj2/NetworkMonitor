@@ -168,7 +168,8 @@ async function connections() {
         !connection.peerAddress.startsWith('192.168.') && 
         !connection.peerAddress.startsWith('10.') && 
         !connection.peerAddress.startsWith('0.0.0.0') && 
-        !connection.peerAddress.startsWith(':')
+        !connection.peerAddress.startsWith(':') &&
+        !connection.peerAddress.startsWith('Address') // Windows exception
     );	
 
     const uniqueConnections = new Map();
@@ -254,7 +255,9 @@ async function mainLoop() {
             pid,
         } = connection;
 
-    console.log(`Connected IP: ${peerAddress} - Transferred: ${format(tx_sec || 0)}/s Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
+        
+
+    console.log(addPadding(`Connected IP: ${peerAddress}`, 29) + addPadding(` - Transferred: ${format(tx_sec || 0)}/s`, 26) + ` Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
     });
 			
     if (options.debug) {debug(rxHistory, txHistory, networkInterface);}
