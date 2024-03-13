@@ -204,7 +204,7 @@ function minMax(txCurrent, rxCurrent) {
     if (rxCurrent > rxMax) {
         rxMax = rxCurrent;
     } else if (txCurrent < rxMin) {
-        rxMax = rxCurrent;
+        rxMin = rxCurrent;
     }
     txMin = txMin == undefined ? txCurrent : txMin;
     rxMin = rxMin == undefined ? rxCurrent : rxMin;
