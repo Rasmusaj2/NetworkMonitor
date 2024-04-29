@@ -11,6 +11,7 @@ const options = {
     txGraph: '#',
     graph: '*',
     interface: 0,
+    showIPv6: false,
 };
 
 const args = process.argv.slice(2);
@@ -46,6 +47,9 @@ function parseArgs() {
 	        case '--interface':
 		        options.interface = parseInt(value, 10);
 		        break;
+            case '--ipv6':
+                options.showIPv6 = value;
+                break;
             default:
                 console.log(`Unknown option: ${arg}`);
                 printUsage();
@@ -68,6 +72,7 @@ function printUsage() {
     --txGraph        Set transfer graph icon (default: ${options.txGraph})
     --graph          Set combined graph icon (default: ${options.graph})
     --interface      Set NetworkInterface monitored (default: ${options.interface})
+    --ipv6           Set if IPv6 connections should be displayed (default: ${options.showIPv6})
     `);
 } 
   
@@ -169,7 +174,8 @@ async function connections() {
         !connection.peerAddress.startsWith('10.') && 
         !connection.peerAddress.startsWith('0.0.0.0') && 
         !connection.peerAddress.startsWith(':') &&
-        !connection.peerAddress.startsWith('Address') // Windows exception
+        !connection.peerAddress.startsWith('Address') && // Windows exception
+        (!options.showIPv6 && !connection.peerAddress.startsWith('['))
     );	
 
     const uniqueConnections = new Map();
