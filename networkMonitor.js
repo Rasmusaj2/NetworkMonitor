@@ -12,6 +12,7 @@ const options = {
     graph: '*',
     interface: 0,
     showIPv6: false,
+    graphOnly: false
 };
 
 const args = process.argv.slice(2);
@@ -50,6 +51,9 @@ function parseArgs() {
             case '--ipv6':
                 options.showIPv6 = value;
                 break;
+            case '--graphOnly':
+                options.graphOnly = value;
+                break;
             default:
                 console.log(`Unknown option: ${arg}`);
                 printUsage();
@@ -73,6 +77,7 @@ function printUsage() {
     --graph          Set combined graph icon (default: ${options.graph})
     --interface      Set NetworkInterface monitored (default: ${options.interface})
     --ipv6           Set if IPv6 connections should be displayed (default: ${options.showIPv6})
+    --graphOnly      Decide if only the graph should be displayed (default: ${options.graphOnly})
     `);
 } 
   
@@ -241,30 +246,33 @@ async function mainLoop() {
     const txAverage = txSum/runtime;
 	minMax(tx_sec, rx_sec);
 
-
     console.clear();
-    console.log(`Interface: ${iface}`);
-    console.log(addPadding(`Received:`, 32) + `Transferred: `);
-    console.log(addPadding(`  Total: ${format(rx_bytes)}`, 34) + `${format(tx_bytes)}`);
-    console.log(addPadding(`  Running: ${format(rxSum)}`, 34) + `${format(txSum)}`);
-    console.log(addPadding(`  Current: ${format(rx_sec || 0)}/s`, 34) + `${format(tx_sec || 0)}/s`);
-    console.log(addPadding(`  Average: ${format(rxAverage)}/s`, 34) + `${format(txAverage)}/s`);
-    console.log(addPadding(`  Min: ${format(rxMin)}/s`, 34) + `${format(txMin)}/s`);
-    console.log(addPadding(`  Max: ${format(rxMax)}/s`, 34) + `${format(txMax)}/s`);
+    if (!options.graphOnly) {
+        console.log(`Interface: ${iface}`);
+        console.log(addPadding(`Received:`, 32) + `Transferred: `);
+        console.log(addPadding(`  Total: ${format(rx_bytes)}`, 34) + `${format(tx_bytes)}`);
+        console.log(addPadding(`  Running: ${format(rxSum)}`, 34) + `${format(txSum)}`);
+        console.log(addPadding(`  Current: ${format(rx_sec || 0)}/s`, 34) + `${format(tx_sec || 0)}/s`);
+        console.log(addPadding(`  Average: ${format(rxAverage)}/s`, 34) + `${format(txAverage)}/s`);
+        console.log(addPadding(`  Min: ${format(rxMin)}/s`, 34) + `${format(txMin)}/s`);
+        console.log(addPadding(`  Max: ${format(rxMax)}/s`, 34) + `${format(txMax)}/s`);
+    }
     drawGraph(rxHistory, txHistory);
 
-    sortedConnections.forEach(connection => {
-        const {
-            peerAddress,
-            tx_sec,
-            rx_sec,
-            pid,
-        } = connection;
+    if (!options.graphOnly) {
+        sortedConnections.forEach(connection => {
+            const {
+                peerAddress,
+                tx_sec,
+                rx_sec,
+                pid,
+            } = connection;
 
-        
-
-    console.log(addPadding(`Connected IP: ${peerAddress}`, 29) + addPadding(` - Transferred: ${format(tx_sec || 0)}/s`, 26) + ` Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
-    });
+            
+    
+        console.log(addPadding(`Connected IP: ${peerAddress}`, 29) + addPadding(` - Transferred: ${format(tx_sec || 0)}/s`, 26) + ` Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
+        });
+    }
 			
     if (options.debug) {debug(rxHistory, txHistory, networkInterface);}
 }

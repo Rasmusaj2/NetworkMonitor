@@ -31,6 +31,7 @@ node networkMonitor.js [options]
 - `--graph`: Set combined graph icon (default: '*')
 - `--interface`: Set Network Interface monitored (default: 0)
 - `--ipv6`: Set if IPv6 connections should be displayed (default: false)
+- `--graphOnly`: Decide if only the graph should be displayed (default: false)
 
 ### Example:
 
