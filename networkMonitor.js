@@ -270,7 +270,7 @@ async function mainLoop() {
 
             
     
-        console.log(addPadding(`Connected IP: ${peerAddress}`, 29) + addPadding(` - Transferred: ${format(tx_sec || 0)}/s`, 26) + ` Received: ${format(rx_sec || 0)}/s - PID: ${pid || 0}`);
+        console.log(addPadding(`Connected IP: ${peerAddress}`, 29) + addPadding(` - Tx: ${format(tx_sec || 0)}/s`, 17) + addPadding(` Rx: ${format(rx_sec || 0)}/s`, 14), ` - PID: ${pid || 0}`);
         });
     }
 			
