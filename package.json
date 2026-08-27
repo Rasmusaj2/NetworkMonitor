@@ -4,7 +4,7 @@
   "description": "A CLI Network Monitor",
   "main": "networkMonitor.js",
   "dependencies": {
-    "systeminformation": "^5.30.8"
+    "systeminformation": "^5.31.7"
   },
   "scripts": {
     "start": "node networkMonitor.js"
